@@ -3398,7 +3398,7 @@ export default function App() {
         window.history.replaceState(null, "", "#" + currentPage);
       }
     } else {
-      if (window.location.hash) window.history.replaceState(null, "", window.location.pathname);
+if (window.location.hash && window.location.hash.slice(1) !== "admin" && !window.location.hash.startsWith("#pub-")) window.history.replaceState(null, "", window.location.pathname);
     }
   }, [currentPage]);
 
