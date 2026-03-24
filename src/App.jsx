@@ -1986,7 +1986,7 @@ function Biblioteca({ onNavigate }) {
           </h2>
         </div>
         {loading && <div style={{ textAlign: "center", padding: "40px 0", fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(0,34,68,0.3)" }}>{lang === "en" ? "Loading publications..." : "Cargando publicaciones..."}</div>}
-        {source === "supabase" && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: "rgba(0,34,68,0.2)", marginBottom: 16, display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "#34a853", display: "inline-block" }} />Conectado a Supabase</div>}
+        
         {!loading && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: 0 }}>
           {library.map((lib, i) => { const isHov = hovered === i; const isActive = activeArea === i; return (
