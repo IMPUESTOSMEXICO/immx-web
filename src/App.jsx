@@ -3407,12 +3407,17 @@ export default function App() {
     }
   }, [currentPage]);
 
-  /* Read hash on load for deep linking (admin, publications) */
+  /* Read hash on load + hash changes (admin, publications) */
   useEffect(() => {
-    const hash = window.location.hash.slice(1);
-    if (hash === "admin" || hash.startsWith("pub-")) {
-      setCurrentPage(hash);
-    }
+    const readHash = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash === "admin" || hash.startsWith("pub-")) {
+        setCurrentPage(hash);
+      }
+    };
+    readHash();
+    window.addEventListener("hashchange", readHash);
+    return () => window.removeEventListener("hashchange", readHash);
   }, []);
 
   useEffect(() => {
