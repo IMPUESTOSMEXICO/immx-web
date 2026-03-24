@@ -197,6 +197,7 @@ const T = {
     empresa: { es: "Empresa", en: "Company" },
     correo: { es: "Correo electrónico", en: "Email address" },
     estado: { es: "Estado", en: "State" },
+    telefono: { es: "Teléfono", en: "Phone" },
     servicio: { es: "Servicio de interés", en: "Service of interest" },
     seleccione: { es: "Seleccione un servicio", en: "Select a service" },
     enviar: { es: "Enviar solicitud", en: "Contact Us" },
@@ -1136,11 +1137,11 @@ function Contact() {
   const [ref, visible] = useInView(0.1);
   const { status, submit } = useContactForm();
   const lang = useLang();
-  const [form, setForm] = useState({ name: "", company: "", email: "", state: "", service: "", message: "", honeypot: "" });
+  const [form, setForm] = useState({ name: "", company: "", email: "", phone: "", state: "", service: "", message: "", honeypot: "" });
   const updateField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
   const handleSubmit = () => submit({ ...form, pageSource: "landing" });
   /* Reset form on success */
-  useEffect(() => { if (status === "success") setForm({ name: "", company: "", email: "", state: "", service: "", message: "", honeypot: "" }); }, [status]);
+  useEffect(() => { if (status === "success") setForm({ name: "", company: "", email: "", phone: "", state: "", service: "", message: "", honeypot: "" }); }, [status]);
   const statusMsg = { success: t(T.contact.exito, lang), error: t(T.contact.error, lang), offline: t(T.contact.offline, lang), rate_limited: t(T.contact.rateLimited, lang), sending: t(T.contact.enviando, lang) };
 
   return (
@@ -1217,6 +1218,7 @@ function Contact() {
             { label: t(T.contact.nombre, lang), type: "text", field: "name" },
             { label: t(T.contact.empresa, lang), type: "text", field: "company" },
             { label: t(T.contact.correo, lang), type: "email", field: "email" },
+            { label: t(T.contact.telefono, lang), type: "tel", field: "phone" },
             { label: t(T.contact.estado, lang), type: "text", field: "state" },
           ].map((f, i) => (
             <div key={i} style={{ marginBottom: 20 }}>
@@ -1707,6 +1709,7 @@ const TAG_COLORS = {
      name TEXT NOT NULL,
      company TEXT DEFAULT '',
      email TEXT NOT NULL,
+     phone TEXT DEFAULT '',
      state TEXT DEFAULT '',
      service TEXT DEFAULT '',
      message TEXT DEFAULT '',
@@ -1758,6 +1761,7 @@ const TAG_COLORS = {
    CREATE TABLE public.contact_requests (
      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
      name TEXT NOT NULL, company TEXT DEFAULT '', email TEXT NOT NULL,
+     phone TEXT DEFAULT '',
      state TEXT DEFAULT '', service TEXT DEFAULT '', message TEXT DEFAULT '',
      page_source TEXT DEFAULT 'landing', honeypot TEXT DEFAULT '',
      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -1867,7 +1871,7 @@ function useContactForm() {
   const sanitize = (str) => String(str || "").trim().slice(0, 1000);
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const submit = async ({ name, company, email, state, service, message, honeypot, pageSource }) => {
+  const submit = async ({ name, company, email, phone, state, service, message, honeypot, pageSource }) => {
     /* Honeypot check — si el campo oculto tiene valor, es bot */
     if (honeypot && honeypot.trim() !== "") {
       setStatus("success"); // Simular éxito para no alertar al bot
@@ -1897,6 +1901,7 @@ function useContactForm() {
           name: sanitize(name),
           company: sanitize(company),
           email: sanitize(email),
+          phone: sanitize(phone),
           state: sanitize(state),
           service: sanitize(service),
           message: sanitize(message).slice(0, 2000),
@@ -2466,22 +2471,21 @@ function Footer({ onNavigate }) {
       <div style={{
         maxWidth: 1320, margin: "29px auto 0",
         paddingTop: 17, borderTop: "1px solid rgba(255,255,255,0.05)",
-        display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12,
+        display: "flex", justifyContent: "center", alignItems: "center", flexWrap: "wrap", gap: 12,
       }}>
         <span style={{
           fontFamily: "'DM Sans', sans-serif", fontSize: 15,
           color: "rgba(255,255,255,0.65)",
         }}>{t(T.footer.derechos, lang)}</span>
-        <div style={{ display: "flex", gap: 24 }}>
-          <a onClick={() => onNavigate && onNavigate("legales")} style={{
-            fontFamily: "'DM Sans', sans-serif", fontSize: 15,
-            color: "rgba(255,255,255,0.65)", textDecoration: "none", cursor: "pointer",
-            transition: "color 0.3s",
-          }}
-            onMouseEnter={e => e.target.style.color = B.accent}
-            onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.65)"}
-          >{t(T.footer.legales, lang)}</a>
-        </div>
+        <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
+        <a onClick={() => onNavigate && onNavigate("legales")} style={{
+          fontFamily: "'DM Sans', sans-serif", fontSize: 15,
+          color: "rgba(255,255,255,0.65)", textDecoration: "none", cursor: "pointer",
+          transition: "color 0.3s",
+        }}
+          onMouseEnter={e => e.target.style.color = B.accent}
+          onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.65)"}
+        >{t(T.footer.legales, lang)}</a>
       </div>
     </footer>
   );
@@ -3188,10 +3192,10 @@ function ServiceContact({ config }) {
   const c = config.contact;
   const practiceNames = config.practiceAreas.items.map(a => a.title);
   const { status, submit } = useContactForm();
-  const [form, setForm] = useState({ name: "", company: "", email: "", state: "", service: "", message: "", honeypot: "" });
+  const [form, setForm] = useState({ name: "", company: "", email: "", phone: "", state: "", service: "", message: "", honeypot: "" });
   const updateField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
   const handleSubmit = () => submit({ ...form, pageSource: config.title });
-  useEffect(() => { if (status === "success") setForm({ name: "", company: "", email: "", state: "", service: "", message: "", honeypot: "" }); }, [status]);
+  useEffect(() => { if (status === "success") setForm({ name: "", company: "", email: "", phone: "", state: "", service: "", message: "", honeypot: "" }); }, [status]);
   const statusMsg = { success: t(T.contact.exito, lang), error: t(T.contact.error, lang), offline: t(T.contact.offline, lang), rate_limited: t(T.contact.rateLimited, lang), sending: t(T.contact.enviando, lang) };
 
   return (
@@ -3237,6 +3241,7 @@ function ServiceContact({ config }) {
             { label: t(T.contact.nombre, lang), type: "text", field: "name" },
             { label: t(T.contact.empresa, lang), type: "text", field: "company" },
             { label: t(T.contact.correo, lang), type: "email", field: "email" },
+            { label: t(T.contact.telefono, lang), type: "tel", field: "phone" },
             { label: t(T.contact.estado, lang), type: "text", field: "state" },
           ].map((f, i) => (
             <div key={i} style={{ marginBottom: 20 }}>
@@ -3398,7 +3403,7 @@ export default function App() {
         window.history.replaceState(null, "", "#" + currentPage);
       }
     } else {
-if (window.location.hash && window.location.hash.slice(1) !== "admin" && !window.location.hash.startsWith("#pub-")) window.history.replaceState(null, "", window.location.pathname);
+      if (window.location.hash) window.history.replaceState(null, "", window.location.pathname);
     }
   }, [currentPage]);
 
@@ -3446,8 +3451,9 @@ if (window.location.hash && window.location.hash.slice(1) !== "admin" && !window
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,500&family=DM+Sans:wght@400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body, #root { margin: 0; padding: 0; width: 100%; background: ${B.navy}; }
         html { scroll-behavior: smooth; }
-        body { overflow-x: hidden; }
+        body { overflow-x: hidden; -webkit-font-smoothing: antialiased; }
         ::selection { background: rgba(0,34,68,0.2); color: ${B.navy}; }
         input::placeholder, select { color: rgba(255,255,255,0.25); }
         select option { background: ${B.navy}; color: ${B.white}; }
