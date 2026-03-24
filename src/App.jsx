@@ -407,7 +407,7 @@ function Navbar({ active, lang, setLang }) {
       padding: scrolled ? "0 0" : "3px 0",
     }}>
       <div style={{
-        maxWidth: 1320, margin: "0 auto", padding: "0 40px",
+        maxWidth: "100%", margin: "0 auto", padding: "0 48px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         height: scrolled ? 50 : 58, transition: "height 0.5s ease",
       }}>
@@ -3304,7 +3304,7 @@ function ServiceNavbar({ onNavigate, lang, setLang }) {
       padding: scrolled ? "0 0" : "3px 0",
     }}>
       <div style={{
-        maxWidth: 1320, margin: "0 auto", padding: "0 40px",
+        maxWidth: "100%", margin: "0 auto", padding: "0 48px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         height: scrolled ? 50 : 58, transition: "height 0.5s ease",
       }}>
