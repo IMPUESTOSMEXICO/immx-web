@@ -436,7 +436,7 @@ function Navbar({ active, lang, setLang }) {
         </a>
 
         {/* Nav links + Lang toggle */}
-        <div style={{ display: "flex", alignItems: "center", gap: 0 }} className="nav-links-desktop">
+        <div style={{ display: "flex", alignItems: "center", gap: 24 }} className="nav-links-desktop">
           {SECTIONS.map((s) => (
             <a key={s.id} onClick={() => scrollTo(s.id)} style={{
               textDecoration: "none", padding: "8px 12px", cursor: "pointer",
@@ -3318,7 +3318,7 @@ function ServiceNavbar({ onNavigate, lang, setLang }) {
             <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700, fontSize: 25, color: B.accent, letterSpacing: "0.04em" }}>MÉXICO</span>
           </span>
         </a>
-        <div style={{ display: "flex", alignItems: "center", gap: 0 }} className="nav-links-desktop">
+        <div style={{ display: "flex", alignItems: "center", gap: 24 }} className="nav-links-desktop">
           {SECTIONS.map((s) => (
             <a key={s.id} onClick={() => onNavigate(null, s.id)} style={{
               textDecoration: "none", padding: "8px 12px", cursor: "pointer",
