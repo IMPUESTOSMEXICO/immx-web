@@ -411,7 +411,7 @@ function Navbar({ active, lang, setLang }) {
       padding: scrolled ? "0 0" : "3px 0",
     }}>
       <div style={{
-        maxWidth: 1320, margin: "0 auto", padding: "0 40px",
+        margin: "0 auto", padding: "0 24px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         height: scrolled ? 50 : 58, transition: "height 0.5s ease",
       }}>
@@ -419,6 +419,7 @@ function Navbar({ active, lang, setLang }) {
         <a onClick={() => scrollTo("inicio")} style={{
           textDecoration: "none", cursor: "pointer",
           display: "flex", alignItems: "center", gap: 10,
+          flexShrink: 0,
         }}>
           <img src={IMMX_LOGO} alt="IMMX" style={{
             height: 46, width: "auto",
@@ -440,7 +441,7 @@ function Navbar({ active, lang, setLang }) {
         </a>
 
         {/* Nav links + Lang toggle */}
-        <div style={{ display: "flex", alignItems: "center", gap: 0 }} className="nav-links-desktop">
+        <div style={{ display: "flex", alignItems: "center", gap: 0, flex: 1, justifyContent: "flex-end" }} className="nav-links-desktop">
           {SECTIONS.map((s) => (
             <a key={s.id} onClick={() => scrollTo(s.id)} style={{
               textDecoration: "none", padding: "8px 12px", cursor: "pointer",
@@ -2473,7 +2474,7 @@ function Footer({ onNavigate }) {
 
   return (
     <footer style={{
-      background: B.navyDark, padding: "60px 40px 40px",
+      background: B.navyDark, padding: "60px 40px 24px",
       borderTop: "1px solid rgba(255,255,255,0.08)",
     }}>
       <div style={{
@@ -2482,23 +2483,13 @@ function Footer({ onNavigate }) {
         alignItems: "flex-start", flexWrap: "wrap", gap: 40,
       }}>
         <div>
-          {/* Full name – same size, gold */}
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
-            <span style={{
-              fontFamily: "'Cormorant Garamond', serif", fontWeight: 700,
-              fontSize: 25, color: B.accent, letterSpacing: "0.04em",
-            }}>IMPUESTOS</span>
-            <span style={{
-              fontFamily: "'Cormorant Garamond', serif", fontWeight: 700,
-              fontSize: 25, color: B.accent, letterSpacing: "0.04em",
-            }}>MÉXICO</span>
-          </div>
-          {/* IMMX logo below */}
+          {/* Logo image + brand name */}
+          <img src={IMMX_LOGO} alt="IMMX" style={{ height: 90, width: "auto", marginBottom: 18, display: "block" }} />
           <div style={{
             fontFamily: "'Cormorant Garamond', serif", fontWeight: 700,
-            fontSize: 14, letterSpacing: "0.2em", color: "rgba(255,255,255,0.4)",
-            marginBottom: 18,
-          }}>IMMX</div>
+            fontSize: 32, color: B.accent, letterSpacing: "0.04em",
+            marginBottom: 16,
+          }}>Impuestos México, S.C.</div>
           <p style={{
             fontFamily: "'DM Sans', sans-serif", fontSize: 15,
             color: "rgba(255,255,255,0.65)", maxWidth: 300, lineHeight: 1.6,
@@ -2568,22 +2559,22 @@ function Footer({ onNavigate }) {
       </div>
 
       <div style={{
-        maxWidth: 1320, margin: "29px auto 0",
-        paddingTop: 17, borderTop: "1px solid rgba(255,255,255,0.05)",
+        maxWidth: 1320, margin: "20px auto 0",
+        paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.05)",
         display: "flex", justifyContent: "center", alignItems: "center", flexWrap: "wrap", gap: 12,
       }}>
         <span style={{
-          fontFamily: "'DM Sans', sans-serif", fontSize: 15,
-          color: "rgba(255,255,255,0.65)",
+          fontFamily: "'DM Sans', sans-serif", fontSize: 12,
+          color: "rgba(255,255,255,0.5)",
         }}>{t(T.footer.derechos, lang)}</span>
         <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
         <a onClick={() => onNavigate && onNavigate("legales")} style={{
-          fontFamily: "'DM Sans', sans-serif", fontSize: 15,
-          color: "rgba(255,255,255,0.65)", textDecoration: "none", cursor: "pointer",
+          fontFamily: "'DM Sans', sans-serif", fontSize: 12,
+          color: "rgba(255,255,255,0.5)", textDecoration: "none", cursor: "pointer",
           transition: "color 0.3s",
         }}
           onMouseEnter={e => e.target.style.color = B.accent}
-          onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.65)"}
+          onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.5)"}
         >{t(T.footer.legales, lang)}</a>
       </div>
     </footer>
@@ -3403,13 +3394,14 @@ function ServiceNavbar({ onNavigate, lang, setLang }) {
       padding: scrolled ? "0 0" : "3px 0",
     }}>
       <div style={{
-        maxWidth: 1320, margin: "0 auto", padding: "0 40px",
+        margin: "0 auto", padding: "0 24px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         height: scrolled ? 50 : 58, transition: "height 0.5s ease",
       }}>
         <a onClick={() => onNavigate(null)} style={{
           textDecoration: "none", cursor: "pointer",
           display: "flex", alignItems: "center", gap: 10,
+          flexShrink: 0,
         }}>
           <img src={IMMX_LOGO} alt="IMMX" style={{ height: 46, width: "auto" }} />
           <span style={{ display: "flex", alignItems: "baseline", gap: 10, whiteSpace: "nowrap" }}>
@@ -3417,7 +3409,7 @@ function ServiceNavbar({ onNavigate, lang, setLang }) {
             <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700, fontSize: 25, color: B.accent, letterSpacing: "0.04em" }}>MÉXICO</span>
           </span>
         </a>
-        <div style={{ display: "flex", alignItems: "center", gap: 0 }} className="nav-links-desktop">
+        <div style={{ display: "flex", alignItems: "center", gap: 0, flex: 1, justifyContent: "flex-end" }} className="nav-links-desktop">
           {SECTIONS.map((s) => (
             <a key={s.id} onClick={() => onNavigate(null, s.id)} style={{
               textDecoration: "none", padding: "8px 12px", cursor: "pointer",
