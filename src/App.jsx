@@ -94,7 +94,11 @@
  * ══════════════════════════════════════════════════════════════════════════
  */
 
-import { useState, useEffect, useRef, createContext, useContext } from "react";
+import { useState, useEffect, useRef, createContext, useContext, useCallback } from "react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import Link from "@tiptap/extension-link";
 
 /* ════════════════════════════════════════════════════════════════════════════
    SISTEMA DE TRADUCCIÓN (ES/EN)
@@ -197,7 +201,6 @@ const T = {
     empresa: { es: "Empresa", en: "Company" },
     correo: { es: "Correo electrónico", en: "Email address" },
     estado: { es: "Estado", en: "State" },
-    telefono: { es: "Teléfono", en: "Phone" },
     servicio: { es: "Servicio de interés", en: "Service of interest" },
     seleccione: { es: "Seleccione un servicio", en: "Select a service" },
     enviar: { es: "Enviar solicitud", en: "Contact Us" },
@@ -407,7 +410,7 @@ function Navbar({ active, lang, setLang }) {
       padding: scrolled ? "0 0" : "3px 0",
     }}>
       <div style={{
-        maxWidth: "100%", margin: "0 auto", padding: "0 48px",
+        maxWidth: 1320, margin: "0 auto", padding: "0 40px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         height: scrolled ? 50 : 58, transition: "height 0.5s ease",
       }}>
@@ -436,7 +439,7 @@ function Navbar({ active, lang, setLang }) {
         </a>
 
         {/* Nav links + Lang toggle */}
-        <div style={{ display: "flex", alignItems: "center", gap: 24 }} className="nav-links-desktop">
+        <div style={{ display: "flex", alignItems: "center", gap: 0 }} className="nav-links-desktop">
           {SECTIONS.map((s) => (
             <a key={s.id} onClick={() => scrollTo(s.id)} style={{
               textDecoration: "none", padding: "8px 12px", cursor: "pointer",
@@ -1137,11 +1140,11 @@ function Contact() {
   const [ref, visible] = useInView(0.1);
   const { status, submit } = useContactForm();
   const lang = useLang();
-  const [form, setForm] = useState({ name: "", company: "", email: "", phone: "", state: "", service: "", message: "", honeypot: "" });
+  const [form, setForm] = useState({ name: "", company: "", email: "", state: "", service: "", message: "", honeypot: "" });
   const updateField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
   const handleSubmit = () => submit({ ...form, pageSource: "landing" });
   /* Reset form on success */
-  useEffect(() => { if (status === "success") setForm({ name: "", company: "", email: "", phone: "", state: "", service: "", message: "", honeypot: "" }); }, [status]);
+  useEffect(() => { if (status === "success") setForm({ name: "", company: "", email: "", state: "", service: "", message: "", honeypot: "" }); }, [status]);
   const statusMsg = { success: t(T.contact.exito, lang), error: t(T.contact.error, lang), offline: t(T.contact.offline, lang), rate_limited: t(T.contact.rateLimited, lang), sending: t(T.contact.enviando, lang) };
 
   return (
@@ -1218,7 +1221,6 @@ function Contact() {
             { label: t(T.contact.nombre, lang), type: "text", field: "name" },
             { label: t(T.contact.empresa, lang), type: "text", field: "company" },
             { label: t(T.contact.correo, lang), type: "email", field: "email" },
-            { label: t(T.contact.telefono, lang), type: "tel", field: "phone" },
             { label: t(T.contact.estado, lang), type: "text", field: "state" },
           ].map((f, i) => (
             <div key={i} style={{ marginBottom: 20 }}>
@@ -1709,7 +1711,6 @@ const TAG_COLORS = {
      name TEXT NOT NULL,
      company TEXT DEFAULT '',
      email TEXT NOT NULL,
-     phone TEXT DEFAULT '',
      state TEXT DEFAULT '',
      service TEXT DEFAULT '',
      message TEXT DEFAULT '',
@@ -1761,7 +1762,6 @@ const TAG_COLORS = {
    CREATE TABLE public.contact_requests (
      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
      name TEXT NOT NULL, company TEXT DEFAULT '', email TEXT NOT NULL,
-     phone TEXT DEFAULT '',
      state TEXT DEFAULT '', service TEXT DEFAULT '', message TEXT DEFAULT '',
      page_source TEXT DEFAULT 'landing', honeypot TEXT DEFAULT '',
      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -1871,7 +1871,7 @@ function useContactForm() {
   const sanitize = (str) => String(str || "").trim().slice(0, 1000);
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const submit = async ({ name, company, email, phone, state, service, message, honeypot, pageSource }) => {
+  const submit = async ({ name, company, email, state, service, message, honeypot, pageSource }) => {
     /* Honeypot check — si el campo oculto tiene valor, es bot */
     if (honeypot && honeypot.trim() !== "") {
       setStatus("success"); // Simular éxito para no alertar al bot
@@ -1901,7 +1901,6 @@ function useContactForm() {
           name: sanitize(name),
           company: sanitize(company),
           email: sanitize(email),
-          phone: sanitize(phone),
           state: sanitize(state),
           service: sanitize(service),
           message: sanitize(message).slice(0, 2000),
@@ -1986,7 +1985,7 @@ function Biblioteca({ onNavigate }) {
           </h2>
         </div>
         {loading && <div style={{ textAlign: "center", padding: "40px 0", fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "rgba(0,34,68,0.3)" }}>{lang === "en" ? "Loading publications..." : "Cargando publicaciones..."}</div>}
-        
+        {source === "supabase" && <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: "rgba(0,34,68,0.2)", marginBottom: 16, display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "#34a853", display: "inline-block" }} />Conectado a Supabase</div>}
         {!loading && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: 0 }}>
           {library.map((lib, i) => { const isHov = hovered === i; const isActive = activeArea === i; return (
@@ -2216,6 +2215,81 @@ function AdminPanel({ token, onNavigate }) {
   );
 }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   RICH TEXT EDITOR — TipTap wrapper con toolbar
+   Botones: Bold, Italic, Underline, H2, H3, Bullet List, Ordered List, Link, Undo, Redo
+   ════════════════════════════════════════════════════════════════════════════ */
+function RichTextEditor({ content, onChange, placeholder }) {
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({ heading: { levels: [2, 3] } }),
+      Underline,
+      Link.configure({ openOnClick: false }),
+    ],
+    content: content || "",
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+  });
+
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content || "");
+    }
+  }, [content]);
+
+  const setLink = useCallback(() => {
+    if (!editor) return;
+    const url = window.prompt("URL del enlace:", "https://");
+    if (url === null) return;
+    if (url === "") { editor.chain().focus().extendMarkRange("link").unsetLink().run(); return; }
+    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+  }, [editor]);
+
+  if (!editor) return null;
+
+  const tb = { background: "none", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.5)", padding: "6px 10px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 600, transition: "all 0.2s", minWidth: 32, textAlign: "center" };
+  const tbActive = { ...tb, background: "rgba(255,255,255,0.15)", color: "#FFFFFF" };
+  const isA = (type, attrs) => editor.isActive(type, attrs);
+
+  return (
+    <div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8, paddingBottom: 8, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+        <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} style={isA("bold") ? tbActive : tb} title="Negritas"><strong>B</strong></button>
+        <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} style={isA("italic") ? tbActive : tb} title="Cursiva"><em>I</em></button>
+        <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} style={isA("underline") ? tbActive : tb} title="Subrayado"><u>U</u></button>
+        <span style={{ width: 1, background: "rgba(255,255,255,0.1)", margin: "0 4px" }} />
+        <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} style={isA("heading", { level: 2 }) ? tbActive : tb} title="Subtítulo">H2</button>
+        <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} style={isA("heading", { level: 3 }) ? tbActive : tb} title="Subtítulo menor">H3</button>
+        <span style={{ width: 1, background: "rgba(255,255,255,0.1)", margin: "0 4px" }} />
+        <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} style={isA("bulletList") ? tbActive : tb} title="Lista">• ≡</button>
+        <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} style={isA("orderedList") ? tbActive : tb} title="Lista numerada">1. ≡</button>
+        <span style={{ width: 1, background: "rgba(255,255,255,0.1)", margin: "0 4px" }} />
+        <button type="button" onClick={setLink} style={isA("link") ? tbActive : tb} title="Enlace">🔗</button>
+        <span style={{ width: 1, background: "rgba(255,255,255,0.1)", margin: "0 4px" }} />
+        <button type="button" onClick={() => editor.chain().focus().undo().run()} style={tb} title="Deshacer">↩</button>
+        <button type="button" onClick={() => editor.chain().focus().redo().run()} style={tb} title="Rehacer">↪</button>
+      </div>
+      <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.15)", padding: "14px 16px", minHeight: 250, color: "#FFFFFF", fontFamily: "'DM Sans', sans-serif", fontSize: 14, lineHeight: 1.8 }}>
+        <style>{`
+          .ProseMirror { outline: none; min-height: 220px; color: #FFFFFF; }
+          .ProseMirror p { margin-bottom: 12px; }
+          .ProseMirror h2 { font-size: 20px; font-weight: 700; margin: 24px 0 12px; color: rgba(255,255,255,0.85); }
+          .ProseMirror h3 { font-size: 17px; font-weight: 600; margin: 20px 0 10px; color: rgba(255,255,255,0.75); }
+          .ProseMirror ul, .ProseMirror ol { padding-left: 24px; margin-bottom: 12px; }
+          .ProseMirror li { margin-bottom: 4px; }
+          .ProseMirror strong { font-weight: 700; color: rgba(255,255,255,0.9); }
+          .ProseMirror em { font-style: italic; }
+          .ProseMirror u { text-decoration: underline; }
+          .ProseMirror a { color: #60a5fa; text-decoration: underline; }
+          .ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: rgba(255,255,255,0.25); pointer-events: none; float: left; height: 0; }
+        `}</style>
+        <EditorContent editor={editor} />
+      </div>
+    </div>
+  );
+}
+
 function AdminEditor({ pub, onSave, onCancel }) {
   const [form, setForm] = useState({
     slug: pub?.slug || "",
@@ -2262,7 +2336,7 @@ function AdminEditor({ pub, onSave, onCancel }) {
             <label style={adminLabel}>Resumen</label>
             <textarea value={form.excerpt_es} onChange={e => u("excerpt_es", e.target.value)} rows={3} style={{ ...adminInput, resize: "vertical" }} placeholder="Resumen breve (1-2 oraciones)" />
             <label style={adminLabel}>Contenido</label>
-            <textarea value={form.content_es} onChange={e => u("content_es", e.target.value)} rows={12} style={{ ...adminInput, resize: "vertical" }} placeholder="Contenido completo. Use doble salto de línea para separar párrafos." />
+            <RichTextEditor content={form.content_es} onChange={v => u("content_es", v)} placeholder="Contenido completo de la publicación" />
           </div>
           <div style={{ background: "rgba(255,255,255,0.02)", padding: "24px", border: "1px solid rgba(255,255,255,0.06)" }}>
             <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.6)", margin: "0 0 20px", letterSpacing: "0.06em" }}>🇺🇸 ENGLISH</h3>
@@ -2271,7 +2345,7 @@ function AdminEditor({ pub, onSave, onCancel }) {
             <label style={adminLabel}>Excerpt</label>
             <textarea value={form.excerpt_en} onChange={e => u("excerpt_en", e.target.value)} rows={3} style={{ ...adminInput, resize: "vertical" }} placeholder="Brief summary (1-2 sentences)" />
             <label style={adminLabel}>Content</label>
-            <textarea value={form.content_en} onChange={e => u("content_en", e.target.value)} rows={12} style={{ ...adminInput, resize: "vertical" }} placeholder="Full content. Use double line breaks for paragraphs." />
+            <RichTextEditor content={form.content_en} onChange={v => u("content_en", v)} placeholder="Full publication content" />
           </div>
         </div>
 
@@ -2319,7 +2393,8 @@ function PublicationPage({ slug, onNavigate }) {
   const title = pub ? (lang === "en" && pub.title_en ? pub.title_en : pub.title_es) : "";
   const content = pub ? (lang === "en" && pub.content_en ? pub.content_en : pub.content_es) : "";
   const excerpt = pub ? (lang === "en" && pub.excerpt_en ? pub.excerpt_en : pub.excerpt_es) : "";
-  const paragraphs = content ? content.split(/\n\n+/) : [excerpt];
+  const isHtml = content && content.includes("<");
+  const paragraphs = !isHtml && content ? content.split(/\n\n+/) : [];
 
   return (
     <div style={{ background: B.navy, minHeight: "100vh" }}>
@@ -2343,12 +2418,31 @@ function PublicationPage({ slug, onNavigate }) {
             <div style={{ width: 48, height: 2, background: "rgba(255,255,255,0.15)" }} />
           </div>
           <div>
-            {paragraphs.map((p, i) => {
-              const trimmed = p.trim();
-              if (!trimmed) return null;
-              if (trimmed.startsWith("## ")) return <h2 key={i} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 18, fontWeight: 700, color: "rgba(255,255,255,0.8)", margin: "48px 0 16px", letterSpacing: "0.02em" }}>{trimmed.slice(3)}</h2>;
-              return <p key={i} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, lineHeight: 1.9, color: "rgba(255,255,255,0.55)", margin: "0 0 24px" }}>{trimmed}</p>;
-            })}
+            <style>{`
+              .pub-content { font-family: 'DM Sans', sans-serif; font-size: 16px; line-height: 1.9; color: rgba(255,255,255,0.55); }
+              .pub-content p { margin: 0 0 24px; }
+              .pub-content h2 { font-size: 20px; font-weight: 700; color: rgba(255,255,255,0.8); margin: 48px 0 16px; letter-spacing: 0.02em; }
+              .pub-content h3 { font-size: 17px; font-weight: 600; color: rgba(255,255,255,0.7); margin: 36px 0 12px; }
+              .pub-content strong { font-weight: 700; color: rgba(255,255,255,0.75); }
+              .pub-content em { font-style: italic; }
+              .pub-content u { text-decoration: underline; }
+              .pub-content ul, .pub-content ol { padding-left: 28px; margin: 0 0 24px; }
+              .pub-content li { margin-bottom: 8px; }
+              .pub-content a { color: #60a5fa; text-decoration: underline; }
+              .pub-content a:hover { color: #93bbfc; }
+            `}</style>
+            {isHtml ? (
+              <div className="pub-content" dangerouslySetInnerHTML={{ __html: content }} />
+            ) : paragraphs.length > 0 ? (
+              paragraphs.map((p, i) => {
+                const trimmed = p.trim();
+                if (!trimmed) return null;
+                if (trimmed.startsWith("## ")) return <h2 key={i} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 18, fontWeight: 700, color: "rgba(255,255,255,0.8)", margin: "48px 0 16px", letterSpacing: "0.02em" }}>{trimmed.slice(3)}</h2>;
+                return <p key={i} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, lineHeight: 1.9, color: "rgba(255,255,255,0.55)", margin: "0 0 24px" }}>{trimmed}</p>;
+              })
+            ) : (
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, lineHeight: 1.9, color: "rgba(255,255,255,0.55)" }}>{excerpt}</p>
+            )}
           </div>
           <div style={{ marginTop: 64, paddingTop: 32, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
             <button onClick={() => onNavigate("horizontes-page")} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.5)", background: "none", border: "1px solid rgba(255,255,255,0.15)", padding: "12px 24px", cursor: "pointer", letterSpacing: "0.04em" }}>
@@ -2471,21 +2565,22 @@ function Footer({ onNavigate }) {
       <div style={{
         maxWidth: 1320, margin: "29px auto 0",
         paddingTop: 17, borderTop: "1px solid rgba(255,255,255,0.05)",
-        display: "flex", justifyContent: "center", alignItems: "center", flexWrap: "wrap", gap: 12,
+        display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12,
       }}>
         <span style={{
           fontFamily: "'DM Sans', sans-serif", fontSize: 15,
           color: "rgba(255,255,255,0.65)",
         }}>{t(T.footer.derechos, lang)}</span>
-        <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
-        <a onClick={() => onNavigate && onNavigate("legales")} style={{
-          fontFamily: "'DM Sans', sans-serif", fontSize: 15,
-          color: "rgba(255,255,255,0.65)", textDecoration: "none", cursor: "pointer",
-          transition: "color 0.3s",
-        }}
-          onMouseEnter={e => e.target.style.color = B.accent}
-          onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.65)"}
-        >{t(T.footer.legales, lang)}</a>
+        <div style={{ display: "flex", gap: 24 }}>
+          <a onClick={() => onNavigate && onNavigate("legales")} style={{
+            fontFamily: "'DM Sans', sans-serif", fontSize: 15,
+            color: "rgba(255,255,255,0.65)", textDecoration: "none", cursor: "pointer",
+            transition: "color 0.3s",
+          }}
+            onMouseEnter={e => e.target.style.color = B.accent}
+            onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.65)"}
+          >{t(T.footer.legales, lang)}</a>
+        </div>
       </div>
     </footer>
   );
@@ -3192,10 +3287,10 @@ function ServiceContact({ config }) {
   const c = config.contact;
   const practiceNames = config.practiceAreas.items.map(a => a.title);
   const { status, submit } = useContactForm();
-  const [form, setForm] = useState({ name: "", company: "", email: "", phone: "", state: "", service: "", message: "", honeypot: "" });
+  const [form, setForm] = useState({ name: "", company: "", email: "", state: "", service: "", message: "", honeypot: "" });
   const updateField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
   const handleSubmit = () => submit({ ...form, pageSource: config.title });
-  useEffect(() => { if (status === "success") setForm({ name: "", company: "", email: "", phone: "", state: "", service: "", message: "", honeypot: "" }); }, [status]);
+  useEffect(() => { if (status === "success") setForm({ name: "", company: "", email: "", state: "", service: "", message: "", honeypot: "" }); }, [status]);
   const statusMsg = { success: t(T.contact.exito, lang), error: t(T.contact.error, lang), offline: t(T.contact.offline, lang), rate_limited: t(T.contact.rateLimited, lang), sending: t(T.contact.enviando, lang) };
 
   return (
@@ -3241,7 +3336,6 @@ function ServiceContact({ config }) {
             { label: t(T.contact.nombre, lang), type: "text", field: "name" },
             { label: t(T.contact.empresa, lang), type: "text", field: "company" },
             { label: t(T.contact.correo, lang), type: "email", field: "email" },
-            { label: t(T.contact.telefono, lang), type: "tel", field: "phone" },
             { label: t(T.contact.estado, lang), type: "text", field: "state" },
           ].map((f, i) => (
             <div key={i} style={{ marginBottom: 20 }}>
@@ -3304,7 +3398,7 @@ function ServiceNavbar({ onNavigate, lang, setLang }) {
       padding: scrolled ? "0 0" : "3px 0",
     }}>
       <div style={{
-        maxWidth: "100%", margin: "0 auto", padding: "0 48px",
+        maxWidth: 1320, margin: "0 auto", padding: "0 40px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         height: scrolled ? 50 : 58, transition: "height 0.5s ease",
       }}>
@@ -3318,7 +3412,7 @@ function ServiceNavbar({ onNavigate, lang, setLang }) {
             <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700, fontSize: 25, color: B.accent, letterSpacing: "0.04em" }}>MÉXICO</span>
           </span>
         </a>
-        <div style={{ display: "flex", alignItems: "center", gap: 24 }} className="nav-links-desktop">
+        <div style={{ display: "flex", alignItems: "center", gap: 0 }} className="nav-links-desktop">
           {SECTIONS.map((s) => (
             <a key={s.id} onClick={() => onNavigate(null, s.id)} style={{
               textDecoration: "none", padding: "8px 12px", cursor: "pointer",
@@ -3403,21 +3497,16 @@ export default function App() {
         window.history.replaceState(null, "", "#" + currentPage);
       }
     } else {
-      if (window.location.hash) window.history.replaceState(null, "", window.location.pathname);
+      if (window.location.hash && window.location.hash.slice(1) !== "admin" && !window.location.hash.startsWith("#pub-")) window.history.replaceState(null, "", window.location.pathname);
     }
   }, [currentPage]);
 
-  /* Read hash on load + hash changes (admin, publications) */
+  /* Read hash on load for deep linking (admin, publications) */
   useEffect(() => {
-    const readHash = () => {
-      const hash = window.location.hash.slice(1);
-      if (hash === "admin" || hash.startsWith("pub-")) {
-        setCurrentPage(hash);
-      }
-    };
-    readHash();
-    window.addEventListener("hashchange", readHash);
-    return () => window.removeEventListener("hashchange", readHash);
+    const hash = window.location.hash.slice(1);
+    if (hash === "admin" || hash.startsWith("pub-")) {
+      setCurrentPage(hash);
+    }
   }, []);
 
   useEffect(() => {
@@ -3456,9 +3545,8 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,500&family=DM+Sans:wght@400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body, #root { margin: 0; padding: 0; width: 100%; background: ${B.navy}; }
         html { scroll-behavior: smooth; }
-        body { overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        body { overflow-x: hidden; }
         ::selection { background: rgba(0,34,68,0.2); color: ${B.navy}; }
         input::placeholder, select { color: rgba(255,255,255,0.25); }
         select option { background: ${B.navy}; color: ${B.white}; }
